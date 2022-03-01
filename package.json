@@ -2,7 +2,7 @@
   "name": "natours",
   "version": "1.0.0",
   "description": "a website that posts new places to visit.",
-  "main": "app.js",
+  "main": "server.js",
   "directories": {
     "view": "views"
   },
