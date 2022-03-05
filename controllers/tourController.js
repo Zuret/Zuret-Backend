@@ -12,49 +12,6 @@ exports.aliasTopTours = (req, res, next) => {
 //Get all Tours------------------------------------------------
 exports.getAllTours = async (req, res) => {
   try {
-    // //filtering------------------------------------------------
-    // const queryObj = { ...req.query };
-    // const excludedFields = ["page", "sort", "limit", "fields"];
-    // excludedFields.forEach((field) => delete queryObj[field]);
-
-    // //advanced filtering------------------------------------------------
-    // let queryStr = JSON.stringify(queryObj);
-    // queryStr = queryStr.replace(
-    //   /\b(gte|lte|gt|lt)\b/g,
-    //   (matches) => `$${matches}`
-    // );
-    // queryStr = JSON.parse(queryStr);
-
-    // //-----------------------------------------------------------------
-    // let query = Tour.find(queryStr);
-
-    // //sorting------------------------------------------------
-    // if (req.query.sort) {
-    //   const sortBy = req.query.sort.split(",").join(" ");
-    //   query = query.sort(sortBy);
-    // } else {
-    //   query = query.sort("-createdAt");
-    // }
-
-    // //limiting fields------------------------------------------------
-    // if (req.query.fields) {
-    //   const fields = req.query.fields.split(",").join(" ");
-    //   query = query.select(fields);
-    // } else {
-    //   query = query.select("-__v");
-    // }
-
-    // //pagination------------------------------------------------
-    // const page = req.query.page * 1 || 1;
-    // const limit = req.query.limit * 1 || 100;
-    // const skip = (page - 1) * limit;
-    // query = query.skip(skip).limit(limit);
-
-    // if (req.query.page) {
-    //   const toursNum = await Tour.countDocuments();
-    //   if (skip >= toursNum) throw new Error("This page does not exist");
-    // }
-
     //constructing------------------------------------------------
     const feature = new APIFeature(Tour.find(), req.query)
       .filter()
@@ -139,6 +96,99 @@ exports.deleteTour = async (req, res) => {
     res.status(204).json({
       status: "success",
       data: null,
+    });
+  } catch (err) {
+    console.log(`ERROR: ${err}`);
+    res.status(404).json({
+      status: "fail",
+      massage: "Invalid data sent to server",
+    });
+  }
+};
+
+//Create stat data of tours------------------------------
+exports.getTourStat = async (req, res) => {
+  try {
+    const stat = await Tour.aggregate([
+      {
+        $match: {
+          ratingsAverage: { $gte: 4.5 },
+        },
+      },
+      {
+        $group: {
+          _id: "$difficulty",
+          numTours: { $sum: 1 },
+          numRatings: { $sum: "$ratingsAverage" },
+          avgRating: { $avg: "$ratingsAverage" },
+          avgPrice: { $avg: "$price" },
+          maxPrice: { $max: "$price" },
+          minPrice: { $min: "$price" },
+        },
+      },
+      {
+        $sort: { avgPrice: 1 },
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      data: stat,
+    });
+  } catch (err) {
+    console.log(`ERROR: ${err}`);
+    res.status(404).json({
+      status: "fail",
+      massage: "Invalid data sent to server",
+    });
+  }
+};
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    const year = req.params.year * 1;
+    console.log(year);
+    const plan = await Tour.aggregate([
+      {
+        $unwind: "$startDates",
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          // _id: { $month: "$startDates" },
+          numTours: { $sum: 1 },
+          Tours: { $push: "$name" },
+        },
+      },
+      {
+        $addFields: {
+          month: "$_id",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        $sort: {
+          month: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      results:plan.length,
+      data: plan,
     });
   } catch (err) {
     console.log(`ERROR: ${err}`);
