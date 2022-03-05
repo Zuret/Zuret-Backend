@@ -1,9 +1,69 @@
 const Tour = require("../models/tourModel");
+const APIFeature = require("../utils/apiFeatures");
 
-//Get all Tours
+//Get 5 Tours that are highly rated and cheap------------------
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = "5";
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields = "name,price,ratingsAverage,summary,difficulty";
+  next();
+};
+
+//Get all Tours------------------------------------------------
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    // //filtering------------------------------------------------
+    // const queryObj = { ...req.query };
+    // const excludedFields = ["page", "sort", "limit", "fields"];
+    // excludedFields.forEach((field) => delete queryObj[field]);
+
+    // //advanced filtering------------------------------------------------
+    // let queryStr = JSON.stringify(queryObj);
+    // queryStr = queryStr.replace(
+    //   /\b(gte|lte|gt|lt)\b/g,
+    //   (matches) => `$${matches}`
+    // );
+    // queryStr = JSON.parse(queryStr);
+
+    // //-----------------------------------------------------------------
+    // let query = Tour.find(queryStr);
+
+    // //sorting------------------------------------------------
+    // if (req.query.sort) {
+    //   const sortBy = req.query.sort.split(",").join(" ");
+    //   query = query.sort(sortBy);
+    // } else {
+    //   query = query.sort("-createdAt");
+    // }
+
+    // //limiting fields------------------------------------------------
+    // if (req.query.fields) {
+    //   const fields = req.query.fields.split(",").join(" ");
+    //   query = query.select(fields);
+    // } else {
+    //   query = query.select("-__v");
+    // }
+
+    // //pagination------------------------------------------------
+    // const page = req.query.page * 1 || 1;
+    // const limit = req.query.limit * 1 || 100;
+    // const skip = (page - 1) * limit;
+    // query = query.skip(skip).limit(limit);
+
+    // if (req.query.page) {
+    //   const toursNum = await Tour.countDocuments();
+    //   if (skip >= toursNum) throw new Error("This page does not exist");
+    // }
+
+    //constructing------------------------------------------------
+    const feature = new APIFeature(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await feature.query;
+
+    //sending------------------------------------------------
     res.status(200).json({
       status: "success",
       results: tours.length,
@@ -17,7 +77,7 @@ exports.getAllTours = async (req, res) => {
     });
   }
 };
-//Get Tour by ID
+//Get Tour by ID------------------------------------------------
 exports.getTour = async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
@@ -35,7 +95,7 @@ exports.getTour = async (req, res) => {
   }
 };
 
-//Create Tour
+//Create Tour------------------------------------------------
 exports.createTour = async (req, res) => {
   try {
     const newTour = await Tour.create(req.body);
@@ -52,7 +112,7 @@ exports.createTour = async (req, res) => {
   }
 };
 
-//Update Tour by ID
+//Update Tour by ID------------------------------------------------
 exports.updateTour = async (req, res) => {
   try {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
@@ -72,10 +132,10 @@ exports.updateTour = async (req, res) => {
   }
 };
 
-//Delete Tour by ID
+//Delete Tour by ID------------------------------------------------
 exports.deleteTour = async (req, res) => {
   try {
-   await Tour.findByIdAndDelete(req.params.id);
+    await Tour.findByIdAndDelete(req.params.id);
     res.status(204).json({
       status: "success",
       data: null,
