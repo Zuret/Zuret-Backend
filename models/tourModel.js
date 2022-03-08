@@ -41,7 +41,7 @@ const tourSchema = new mongoose.Schema(
         validator: function(val){
           return val < this.price
         },
-        massage: " the price discount must always be less than the actual price";
+        massage: " the price discount must always be less than the actual price"
       }
     },
     priceDiscount: Number,
