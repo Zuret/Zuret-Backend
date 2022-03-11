@@ -11,10 +11,14 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, "Please tell us your email"],
-    //FIXME email uniqueness validation is not working
     unique: [true, "email must be unique"],
     trim: true,
     validate: [validator.isEmail, "please provide a valid email address"],
+  },
+  role:{
+    type: String,
+    enum: ["admin", "user", "lead-guide", "guide"],
+    default: "user",
   },
   photo: String,
   password: {
