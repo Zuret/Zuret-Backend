@@ -1,5 +1,5 @@
 {
-  "name": "natours",
+  "name": "Zuret",
   "version": "1.0.0",
   "description": "a website that posts new places to visit.",
   "main": "server.js",
@@ -16,8 +16,14 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "express": "^4.17.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^6.3.0",
+    "helmet": "^5.0.2",
+    "hpp": "^0.2.3",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.13",
-    "validator": "^13.7.0"
+    "nodemailer": "^6.7.2",
+    "validator": "^13.7.0",
+    "xss-clean": "^0.1.1"
   }
 }

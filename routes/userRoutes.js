@@ -7,6 +7,13 @@ const userRouter = express.Router();
 userRouter.route("/signup").post(authController.signUp);
 userRouter.route("/login").post(authController.login);
 
+userRouter.route("/forgetPassword").post(authController.forgetPassword);
+userRouter.route("/resetPassword/:token").patch(authController.resetPassword);
+userRouter.route("/updatePassword").patch(authController.protect, authController.updatePassword);
+
+userRouter.route("/updateMe").patch(authController.protect, userController.updateMe);
+userRouter.route("/deleteMe").patch(authController.protect, userController.deleteMe);
+
 userRouter
   .route("/")
   .get(userController.getAllUsers)
