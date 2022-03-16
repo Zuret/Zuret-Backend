@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const app = require("./app.js");
+const dotenv = require("dotenv");
 
 process.on("uncaughtException", (err) => {
   console.log("Unhandled rejection error: Server Shuting down....");
