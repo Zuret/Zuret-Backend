@@ -15,6 +15,10 @@ const filterObj = (obj, ...allowedFields) => {
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
 
+  if (!users) {
+    return next(new AppError("No tour found "));
+    }
+
   //sending------------------------------------------------
   res.status(200).json({
     status: "success",
