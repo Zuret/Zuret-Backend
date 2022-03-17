@@ -105,10 +105,19 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
+// virtual populate
+tourSchema.virtual("review", {
+  ref: "Review",
+  foreignField: "tour",
+  localField: "_id",
+});
 // ====DOCUMENT MIDDLEWARE================================
 
 tourSchema.pre(/^find/, function (next) {
@@ -119,33 +128,33 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-//======runs before the document is saved to the database=======
-// tourSchema.pre("save", function(next){
-// this.duration = this.duration + 1
-//   next();
-// })
+// ======runs before the document is saved to the database=======
+tourSchema.pre("save", function(next){
+this.duration = this.duration + 1
+  next();
+})
 
-//======runs after the document has been saved to the database=======
-// tourSchema.post("save", function(doc, next){
-//   console.log("doc")
-//   next();
-// })
+// ======runs after the document has been saved to the database=======
+tourSchema.post("save", function(doc, next){
+  console.log("doc")
+  next();
+})
 
 // ====QUERY MIDDLEWARE================================
 
-//runs before the query has been executed==============
-// tourSchema.pre(/^find/, function (next) {
-//   this.find({ secretTour: { $ne: true } });
-//   next();
-// });
+// runs before the query has been executed==============
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
 
 // ====AGGREGATION MIDDLEWARE================================
 
-//runs before the aggregation has been executed==============
-// tourSchema.pre("aggregate", function (next) {
-//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-//   next();
-// });
+// runs before the aggregation has been executed==============
+tourSchema.pre("aggregate", function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  next();
+});
 
 const Tour = mongoose.model("Tour", tourSchema);
 

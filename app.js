@@ -6,6 +6,7 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 const tourRouter = require("./routes/tourRoutes.js");
 const userRouter = require("./routes/userRoutes.js");
+const reviewRouter = require("./routes/reviewRoutes.js");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController.js");
 
@@ -41,6 +42,7 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/review", reviewRouter);
 
 //FIXME make the limiter work
 const apiLimiter = rateLimit({
