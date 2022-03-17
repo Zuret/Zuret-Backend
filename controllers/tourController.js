@@ -10,8 +10,62 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.fields = "name,price,ratingsAverage,summary,difficulty";
   next();
 };
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+  const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
 
-exports.getAllTours = factory.getAll(Tour)
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        "Please provide the latitude and longitude in the format lan,lng!"
+      )
+    );
+  }
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+  res
+    .status(200)
+    .json({ status: "success", results: tours.length, data: tours });
+});
+
+exports.getDistance = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  let [lat, lng] = latlng.split(",");
+  const multiplier = unit === "mi" ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        "Please provide the latitude and longitude in the format lan,lng!"
+      )
+    );
+  }
+  const distance = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: "distance",
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res
+    .status(200)
+    .json({ status: "success", results: distance.length, data: distance });
+});
+
+exports.getAllTours = factory.getAll(Tour);
 exports.getTour = factory.getOne(Tour, { path: "review" });
 exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
